@@ -144,8 +144,8 @@ def simulate_maxflow_online(avg_throughput: float):
 
     # ------------------------------------------ Simulation ------------------------------------------ #
     # setup simulation and run 设置跑的时间长短
-    # warm_up, duration = 0, 1800
-    warm_up, duration = 0, 60 
+    warm_up, duration = 0, 1800
+    # warm_up, duration = 0, 60 
     auto_test = OnlineRequestFeeder(cluster_token_throughput=avg_throughput,
                                     start_time=finish_model_loading_time,
                                     duration=duration, seed=0)
@@ -402,8 +402,8 @@ def main():
         elif scheduler == "swarm":
             # Scheduling method: Swarm
             # Request arrival pattern: offline
-            # simulate_heuristic_offline(scheduling_method=SchedulingMethod.Swarm, initial_query_num=240)
-            simulate_heuristic_offline(scheduling_method=SchedulingMethod.Swarm, initial_query_num=50)
+            simulate_heuristic_offline(scheduling_method=SchedulingMethod.Swarm, initial_query_num=240)
+            # simulate_heuristic_offline(scheduling_method=SchedulingMethod.Swarm, initial_query_num=50)
 
 
         elif scheduler == "random":
