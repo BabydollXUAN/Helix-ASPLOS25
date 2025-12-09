@@ -4,7 +4,44 @@ from simulator.initial_layout.layout_synthesizer import LayoutMethod, LayoutSynt
 from simulator.event_simulator.cluster_simulator import ClusterSimulator, ModelName, SchedulingMethod, RequestPhase
 from simulator.trace_generator.simulator_query_feeder import OnlineRequestFeeder, OfflineRequestFeeder
 from simulator.scheduler.global_maxflow.global_maxflow_scheduler import KVParameters, SchedulingMode
+import csv
+import os
+from datetime import datetime
 
+# ==================== 新增：自动实验记录员 ==================== #
+def save_experiment_record(method_name, mode, throughput, p_latency, d_latency):
+    """
+    将实验结果保存到 csv 文件中
+    命名格式：records/方法_模式_日期_吞吐量.csv
+    """
+    # 1. 创建存放记录的文件夹
+    record_dir = "experiment_records"
+    os.makedirs(record_dir, exist_ok=True)
+
+    # 2. 构造文件名 (Swarm_Offline_2025-12-09_187tps.csv)
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    time_str = datetime.now().strftime("%H:%M:%S")
+    throughput_int = int(throughput)
+    filename = f"{method_name}_{mode}_{date_str}_{throughput_int}tps.csv"
+    file_path = os.path.join(record_dir, filename)
+
+    # 3. 准备数据
+    headers = ["Timestamp", "Method", "Mode", "Throughput(T/s)", "Prompt_Lat(s)", "Decode_Lat(s)"]
+    data = [time_str, method_name, mode, f"{throughput:.2f}", f"{p_latency:.3f}", f"{d_latency:.3f}"]
+
+    # 4. 写入 CSV (追加模式)
+    file_exists = os.path.isfile(file_path)
+    try:
+        with open(file_path, mode='a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            # 如果是新文件，先写表头
+            if not file_exists:
+                writer.writerow(headers)
+            writer.writerow(data)
+        print(f"\n[Record Saved] 实验结果已记录到: {file_path}")
+    except Exception as e:
+        print(f"\n[Error] 保存实验记录失败: {e}")
+# =========================================================== #
 
 def simulate_maxflow_offline():
     """
@@ -98,6 +135,8 @@ def simulate_maxflow_offline():
     print(f"Avg prompt latency: {avg_prompt_latency:.3f}s")
     print(f"Avg decode latency: {avg_decode_latency:.3f}s")
     print(f"# ------------------------------------------------------------- #")
+    # === 新增这一行 ===
+    save_experiment_record("MaxFlow", "Online", decode_throughput, avg_prompt_latency, avg_decode_latency)    
     simulator.plot_inference_speed(max_time=700, save_path="./sim_files/maxflow_offline/throughput.png")
     simulator.plot_request_latency(ignore_initialize=True, save_path="./sim_files/maxflow_offline/latency.png")
 
@@ -285,6 +324,11 @@ def simulate_heuristic_offline(scheduling_method: SchedulingMethod, initial_quer
     print(f"Avg prompt latency: {avg_prompt_latency:.3f}s")
     print(f"Avg decode latency: {avg_decode_latency:.3f}s")
     print(f"# ------------------------------------------------------------- #")
+    # === 新增这几行 (自动获取方法名) ===
+    # scheduling_method 是一个 Enum，.name 可以获取 'Swarm' 或 'ShortestQueue' 等名字
+    method_str = str(scheduling_method).split('.')[-1] 
+    save_experiment_record(method_str, "Offline", decode_throughput, avg_prompt_latency, avg_decode_latency)
+    # =================================    
     simulator.plot_inference_speed(max_time=700, save_path=None)
     simulator.plot_request_latency(ignore_initialize=True, save_path=None)
 
@@ -372,6 +416,8 @@ def simulate_heuristic_online(scheduling_method: SchedulingMethod, avg_throughpu
     print(f"Avg prompt latency: {avg_prompt_latency:.3f}s")
     print(f"Avg decode latency: {avg_decode_latency:.3f}s")
     print(f"# ------------------------------------------------------------- #")
+    method_str = str(scheduling_method).split('.')[-1]
+    save_experiment_record(method_str, "Online", decode_throughput, avg_prompt_latency, avg_decode_latency)    
     simulator.plot_inference_speed(max_time=700)
     simulator.plot_request_latency(ignore_initialize=True)
 

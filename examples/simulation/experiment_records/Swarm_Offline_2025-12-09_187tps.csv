@@ -1,0 +1,2 @@
+Timestamp,Method,Mode,Throughput(T/s),Prompt_Lat(s),Decode_Lat(s)
+20:05:20,Swarm,Offline,187.56,2.758,1.267

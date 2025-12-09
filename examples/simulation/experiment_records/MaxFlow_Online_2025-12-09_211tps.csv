@@ -1,0 +1,2 @@
+Timestamp,Method,Mode,Throughput(T/s),Prompt_Lat(s),Decode_Lat(s)
+20:27:20,MaxFlow,Online,211.56,1.932,0.906
